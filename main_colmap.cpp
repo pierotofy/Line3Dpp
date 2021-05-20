@@ -372,7 +372,7 @@ int main(int argc, char *argv[])
             Eigen::Vector3d C = cams_C[imgID];
 
             // read image
-            cv::Mat image = cv::imread(inputFolder+"/"+cams_images[imgID],CV_LOAD_IMAGE_GRAYSCALE);
+            cv::Mat image = cv::imread(inputFolder+"/"+cams_images[imgID], cv::IMREAD_GRAYSCALE);
 
             // undistort image
             cv::Mat img_undist;

@@ -379,7 +379,7 @@ int main(int argc, char *argv[])
     {
         // load image
         std::string img_filename = imageFolder+"/"+cams_filenames[i];
-        cv::Mat image = cv::imread(img_filename,CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat image = cv::imread(img_filename,cv::IMREAD_GRAYSCALE);
 
         std::string key = pos2img[i];
 

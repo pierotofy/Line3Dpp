@@ -335,7 +335,7 @@ int main(int argc, char *argv[])
         if(image_found && cams_worldpointDepths[i].size() > 0)
         {
             // load image
-            image = cv::imread(img_filename,CV_LOAD_IMAGE_GRAYSCALE);
+            image = cv::imread(img_filename,cv::IMREAD_GRAYSCALE);
 
             // setup intrinsics
             float px = float(image.cols)/2.0f;

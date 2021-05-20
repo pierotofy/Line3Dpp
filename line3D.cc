@@ -1,4 +1,5 @@
 #include "line3D.h"
+#include <opencv2/calib3d.hpp>
 
 namespace L3DPP
 {
@@ -253,7 +254,7 @@ namespace L3DPP
         if(image.type() == CV_8UC3)
         {
             // convert to grayscale
-            cv::cvtColor(image,imgGray,CV_RGB2GRAY);
+            cv::cvtColor(image,imgGray,cv::COLOR_RGB2GRAY);
         }
         else if(image.type() == CV_8U)
         {

@@ -199,7 +199,8 @@ namespace L3DPP
         options.linear_solver_type = ceres::SPARSE_SCHUR;
         options.num_threads = boost::thread::hardware_concurrency();
         options.minimizer_progress_to_stdout = true;
-        options.num_linear_solver_threads = boost::thread::hardware_concurrency();
+        // options.num_linear_solver_threads = boost::thread::hardware_concurrency();
+        options.num_threads = boost::thread::hardware_concurrency();
 
         ceres::Solver::Summary summary;
         ceres::Solve(options,problem,&summary);

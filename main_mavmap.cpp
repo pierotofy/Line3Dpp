@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
         if(image_found)
         {
             // load image
-            image = cv::imread(img_filename,CV_LOAD_IMAGE_GRAYSCALE);
+            image = cv::imread(img_filename,cv::IMREAD_GRAYSCALE);
 
             // setup intrinsics
             double px = cams_principle[i].x();
