@@ -26,6 +26,7 @@
 // std
 #include <vector>
 #include <iostream>
+#include <fstream>
 
 /**
  * Line3D++ - DataArray CPU/GPU
@@ -373,6 +374,11 @@ namespace L3DPP
             ar & boost::serialization::make_array<PixelType>(&dataCPU_[0],dataCPU_.size());
         }
     };
+
+    void WriteDataArrayFloat4ToText(std::string filename, L3DPP::DataArray<float4>& arr);
+
+    void ReadDataArrayFloat4FromText(std::string filename, L3DPP::DataArray<float4>& arr);
 }
 
 #endif //I3D_LINE3D_PP_DATAARRAY_H_
+

@@ -298,13 +298,14 @@ namespace L3DPP
         std::stringstream str;
         if(load_segments_)
         {
-            str << data_folder_ << "segments_L3D++_" << camID << "_" << new_width << "x" << new_height << "_" << L3D_DEF_MAX_NUM_SEGMENTS << ".bin";
+            str << data_folder_ << "segments_L3D++_" << camID << "_" << new_width << "x" << new_height << "_" << L3D_DEF_MAX_NUM_SEGMENTS << ".txt";
 
             boost::filesystem::path file(str.str());
             if(boost::filesystem::exists(file))
             {
                 segments = new L3DPP::DataArray<float4>();
-                L3DPP::serializeFromFile(str.str(),*segments);
+                // L3DPP::serializeFromFile(str.str(),*segments);
+                L3DPP::ReadDataArrayFloat4FromText(str.str(),*segments);
                 return segments;
             }
         }
@@ -363,7 +364,8 @@ namespace L3DPP
             // save
             if(load_segments_)
             {
-                L3DPP::serializeToFile(str.str(),*segments);
+                // L3DPP::serializeToFile(str.str(),*segments);
+                L3DPP::WriteDataArrayFloat4ToText(str.str(),*segments);
             }
 
             return segments;
