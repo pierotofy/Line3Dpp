@@ -183,6 +183,7 @@ namespace L3DPP
         void saveResultAsOBJ(const std::string& output_folder);
         void save3DLinesAsTXT(const std::string& output_folder);
         void save3DLinesAsBIN(const std::string& output_folder);
+        void saveSampledPoints(const std::string& output_folder);
 
         // Eigen::Vector4f getSegmentCoords2D(...): provides access to the 2D segment coordinates
         // -------------------------------------

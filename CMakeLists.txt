@@ -285,6 +285,11 @@ add_executable(runLine3Dpp_vsfm main_vsfm.cpp)
 target_link_libraries(runLine3Dpp_vsfm line3Dpp)
 target_link_libraries(runLine3Dpp_vsfm ${ALL_LIBRARIES})
 
+#----- Add main for VisualSfM - ODM --------
+add_executable(runLine3Dpp_vsfm_odm main_vsfm_odm.cpp)
+target_link_libraries(runLine3Dpp_vsfm_odm line3Dpp)
+target_link_libraries(runLine3Dpp_vsfm_odm ${ALL_LIBRARIES})
+
 #----- Add main for bundler --------
 # add_executable(runLine3Dpp_bundler main_bundler.cpp)
 # target_link_libraries(runLine3Dpp_bundler line3Dpp)

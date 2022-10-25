@@ -1,5 +1,6 @@
 #include "line3D.h"
 #include <opencv2/calib3d.hpp>
+#include <random>
 
 namespace L3DPP
 {
@@ -2711,6 +2712,96 @@ namespace L3DPP
         view_mutex_.unlock();
     }
 
+    void Line3D::saveSampledPoints(const std::string& output_folder){
+        view_mutex_.lock();
+        view_reserve_mutex_.lock();
+
+        if(lines3D_.size() == 0)
+        {
+            std::cout << prefix_wng_ << "no 3D lines to sample!" << std::endl;
+            view_reserve_mutex_.unlock();
+            view_mutex_.unlock();
+            return;
+        }
+
+        // get filename
+        std::string filename = output_folder+"/"+createOutputFilename()+"-points.obj";
+
+        std::ofstream file;
+        file.open(filename.c_str());
+
+        const double PI = std::atan(1) * 4; 
+        std::random_device rd; // obtain a random number from hardware
+        std::mt19937 gen(rd()); // seed the generator
+        std::uniform_real_distribution<> ad(-PI, PI);
+        
+        Eigen::Vector3d up(0.0, 0.0, 1.0);
+        Eigen::Vector3d right(1.0, 0.0, 0.0);
+        
+
+        for(size_t i=0; i<lines3D_.size(); ++i)
+        {
+            L3DPP::FinalLine3D current = lines3D_[i];
+            L3DPP::LineCluster3D &cluster = current.underlyingCluster_;
+            unsigned int refView = cluster.reference_view();
+
+
+            std::list<L3DPP::Segment3D>::const_iterator it2 = current.collinear3Dsegments_.begin();
+            for(; it2!=current.collinear3Dsegments_.end(); ++it2)
+            {
+                if (it2->valid()){
+
+                    // Sample points on the cylinder defined
+                    // by the line P2-P1
+                    // This is done by using the parametrized line+circle equations
+                    // https://www.nagwa.com/en/explainers/296105290721/
+                    // https://math.stackexchange.com/questions/73237/parametric-equation-of-a-circle-in-3d-space
+
+                    Eigen::Vector3d P1 = it2->P1();
+                    Eigen::Vector3d P2 = it2->P2();
+                    Eigen::Vector3d d = (P2 - P1).normalized();
+
+                    Eigen::Vector3d a = d.cross(up);
+                    if (a.isZero(1e-4)){
+                        a = d.cross(right);
+                    }
+                    Eigen::Vector3d b = a.cross(d);
+
+                    file << "v " << P1.x() << " " << P1.y() << " " << P1.z() << std::endl;
+                    file << "v " << P2.x() << " " << P2.y() << " " << P2.z() << std::endl;
+
+                    const double scale = 20;
+                    const double radius = 0.01;
+
+                    const double L = it2->length();
+                    unsigned int numSamples = static_cast<unsigned int>(std::round(scale * L));
+                    std::uniform_real_distribution<> td(0, L); // t
+
+                    std::cout << "Sampling " << numSamples << " points" << std::endl;
+    
+                    if (numSamples > 0){
+                        // Sample angles and lengths
+                        for (unsigned int sa = 0; sa < numSamples; sa++){
+                            double angle = ad(gen);
+                            double t = td(gen);
+
+                            Eigen::Vector3d c = P1 + d * t;
+                            
+                            Eigen::Vector3d p = c + (radius * std::cos(angle) * a) + (radius * std::sin(angle) * b); 
+                            file << "v " << p.x() << " " << p.y() << " " << p.z() << std::endl;
+
+                        }
+                    }
+                }
+            }
+        }
+
+        file.close();
+
+        view_reserve_mutex_.unlock();
+        view_mutex_.unlock();
+    }
+
     //------------------------------------------------------------------------------
     Eigen::Matrix3d Line3D::rotationFromRPY(const double roll, const double pitch,
                                             const double yaw)
@@ -2855,42 +2946,43 @@ namespace L3DPP
     //------------------------------------------------------------------------------
     std::string Line3D::createOutputFilename()
     {
-        std::stringstream str;
-        str << "Line3D++__";
+        // std::stringstream str;
+        // str << "Line3D++__";
 
-        if(max_image_width_ > 0)
-            str << "W_" << max_image_width_ << "__";
-        else
-            str << "W_FULL__";
+        // if(max_image_width_ > 0)
+        //     str << "W_" << max_image_width_ << "__";
+        // else
+        //     str << "W_FULL__";
 
-        str << "N_" << num_neighbors_ << "__";
+        // str << "N_" << num_neighbors_ << "__";
 
-        str << "sigmaP_" << sigma_p_ << "__";
-        str << "sigmaA_" << sigma_a_ << "__";
+        // str << "sigmaP_" << sigma_p_ << "__";
+        // str << "sigmaA_" << sigma_a_ << "__";
 
-        str << "epiOverlap_" << epipolar_overlap_ << "__";
+        // str << "epiOverlap_" << epipolar_overlap_ << "__";
 
-        if(kNN_ > 0)
-            str << "kNN_" << kNN_ << "__";
+        // if(kNN_ > 0)
+        //     str << "kNN_" << kNN_ << "__";
 
-        if(collinearity_t_ > L3D_EPS)
-            str << "COLLIN_" << collinearity_t_ << "__";
+        // if(collinearity_t_ > L3D_EPS)
+        //     str << "COLLIN_" << collinearity_t_ << "__";
 
-        if(fixed3Dregularizer_)
-        {
-            str << "FXD_SIGMA_P__";
+        // if(fixed3Dregularizer_)
+        // {
+        //     str << "FXD_SIGMA_P__";
 
-            if(const_regularization_depth_ > 0.0f)
-                str << "REG_DEPTH_" << const_regularization_depth_ << "__";
-        }
+        //     if(const_regularization_depth_ > 0.0f)
+        //         str << "REG_DEPTH_" << const_regularization_depth_ << "__";
+        // }
 
-        if(perform_RDD_)
-            str << "DIFFUSION__";
+        // if(perform_RDD_)
+        //     str << "DIFFUSION__";
 
-        if(use_CERES_)
-            str << "OPTIMIZED__";
+        // if(use_CERES_)
+        //     str << "OPTIMIZED__";
 
-        str << "vis_" << visibility_t_;
-        return str.str();
+        // str << "vis_" << visibility_t_;
+        // return str.str();
+        return "output";
     }
 }
