@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 set (CMAKE_BUILD_TYPE Release)
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 ##-----------------------------------------------------------------------------
 ## OpenCV
