@@ -2725,10 +2725,10 @@ namespace L3DPP
         }
 
         // get filename
-        std::string filename = output_folder+"/"+createOutputFilename()+"-points.obj";
+        std::string filename = output_folder+"/"+createOutputFilename()+".bin";
 
         std::ofstream file;
-        file.open(filename.c_str());
+        file.open(filename.c_str(), std::ios::binary);
 
         const double PI = std::atan(1) * 4; 
         std::random_device rd; // obtain a random number from hardware
@@ -2737,14 +2737,15 @@ namespace L3DPP
         
         Eigen::Vector3d up(0.0, 0.0, 1.0);
         Eigen::Vector3d right(1.0, 0.0, 0.0);
-        
 
+        SampleRecord sr;
+        size_t srSize = sizeof(float) * 3 + sizeof(uint32_t);
+        
         for(size_t i=0; i<lines3D_.size(); ++i)
         {
             L3DPP::FinalLine3D current = lines3D_[i];
             L3DPP::LineCluster3D &cluster = current.underlyingCluster_;
-            unsigned int refView = cluster.reference_view();
-
+            uint32_t viewRef = cluster.reference_view();
 
             std::list<L3DPP::Segment3D>::const_iterator it2 = current.collinear3Dsegments_.begin();
             for(; it2!=current.collinear3Dsegments_.end(); ++it2)
@@ -2767,8 +2768,8 @@ namespace L3DPP
                     }
                     Eigen::Vector3d b = a.cross(d);
 
-                    file << "v " << P1.x() << " " << P1.y() << " " << P1.z() << std::endl;
-                    file << "v " << P2.x() << " " << P2.y() << " " << P2.z() << std::endl;
+                    // file << "v " << P1.x() << " " << P1.y() << " " << P1.z() << std::endl;
+                    // file << "v " << P2.x() << " " << P2.y() << " " << P2.z() << std::endl;
 
                     const double scale = 20;
                     const double radius = 0.01;
@@ -2777,8 +2778,6 @@ namespace L3DPP
                     unsigned int numSamples = static_cast<unsigned int>(std::round(scale * L));
                     std::uniform_real_distribution<> td(0, L); // t
 
-                    std::cout << "Sampling " << numSamples << " points" << std::endl;
-    
                     if (numSamples > 0){
                         // Sample angles and lengths
                         for (unsigned int sa = 0; sa < numSamples; sa++){
@@ -2788,8 +2787,13 @@ namespace L3DPP
                             Eigen::Vector3d c = P1 + d * t;
                             
                             Eigen::Vector3d p = c + (radius * std::cos(angle) * a) + (radius * std::sin(angle) * b); 
-                            file << "v " << p.x() << " " << p.y() << " " << p.z() << std::endl;
-
+                            // file << "v " << p.x() << " " << p.y() << " " << p.z() << std::endl;
+                            
+                            sr.viewRef = viewRef;
+                            sr.x = static_cast<float>(p.x());
+                            sr.y = static_cast<float>(p.y());
+                            sr.z = static_cast<float>(p.z());
+                            file.write(reinterpret_cast<char *>(&sr), srSize);
                         }
                     }
                 }

@@ -423,6 +423,13 @@ namespace L3DPP
         std::vector<L3DPP::FinalLine3D> lines3D_;
         std::map<L3DPP::Segment2D,std::set<L3DPP::Segment2D> > used_;
     };
+
+    struct SampleRecord{
+        uint32_t viewRef;
+        float x;
+        float y;
+        float z;
+    };
 }
 
 #endif //I3D_LINE3D_PP_LINE3D_H_
