@@ -186,7 +186,7 @@ ENDIF(OPENMP_FOUND)
 
 ##-----------------------------------------------------------------------------
 ## RapidJSON
-FIND_PACKAGE(RapidJSON)
+# FIND_PACKAGE(RapidJSON)
 
 ##-----------------------------------------------------------------------------
 ## tclap
@@ -286,31 +286,31 @@ target_link_libraries(runLine3Dpp_vsfm line3Dpp)
 target_link_libraries(runLine3Dpp_vsfm ${ALL_LIBRARIES})
 
 #----- Add main for bundler --------
-add_executable(runLine3Dpp_bundler main_bundler.cpp)
-target_link_libraries(runLine3Dpp_bundler line3Dpp)
-target_link_libraries(runLine3Dpp_bundler ${ALL_LIBRARIES})
+# add_executable(runLine3Dpp_bundler main_bundler.cpp)
+# target_link_libraries(runLine3Dpp_bundler line3Dpp)
+# target_link_libraries(runLine3Dpp_bundler ${ALL_LIBRARIES})
 
 #----- Add main for mavmap --------
-add_executable(runLine3Dpp_mavmap main_mavmap.cpp)
-target_link_libraries(runLine3Dpp_mavmap line3Dpp)
-target_link_libraries(runLine3Dpp_mavmap ${ALL_LIBRARIES})
+# add_executable(runLine3Dpp_mavmap main_mavmap.cpp)
+# target_link_libraries(runLine3Dpp_mavmap line3Dpp)
+# target_link_libraries(runLine3Dpp_mavmap ${ALL_LIBRARIES})
 
 #----- Add main for Pix4D --------
-add_executable(runLine3Dpp_pix4d main_pix4d.cpp)
-target_link_libraries(runLine3Dpp_pix4d line3Dpp)
-target_link_libraries(runLine3Dpp_pix4d ${ALL_LIBRARIES})
+# add_executable(runLine3Dpp_pix4d main_pix4d.cpp)
+# target_link_libraries(runLine3Dpp_pix4d line3Dpp)
+# target_link_libraries(runLine3Dpp_pix4d ${ALL_LIBRARIES})
 
 #----- Add main for colmap --------
-add_executable(runLine3Dpp_colmap main_colmap.cpp)
-target_link_libraries(runLine3Dpp_colmap line3Dpp)
-target_link_libraries(runLine3Dpp_colmap ${ALL_LIBRARIES})
+# add_executable(runLine3Dpp_colmap main_colmap.cpp)
+# target_link_libraries(runLine3Dpp_colmap line3Dpp)
+# target_link_libraries(runLine3Dpp_colmap ${ALL_LIBRARIES})
 
 #----- Add main for OpenMVG --------
-IF(RapidJSON_FOUND)
-add_executable(runLine3Dpp_openmvg main_openmvg.cpp)
-target_link_libraries(runLine3Dpp_openmvg line3Dpp)
-target_link_libraries(runLine3Dpp_openmvg ${ALL_LIBRARIES})
-ENDIF(RapidJSON_FOUND)
+# IF(RapidJSON_FOUND)
+# add_executable(runLine3Dpp_openmvg main_openmvg.cpp)
+# target_link_libraries(runLine3Dpp_openmvg line3Dpp)
+# target_link_libraries(runLine3Dpp_openmvg ${ALL_LIBRARIES})
+# ENDIF(RapidJSON_FOUND)
 
 ENDIF(APP_LINE_3D++_BUILD_EXECUTABLES)
 
