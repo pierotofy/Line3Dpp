@@ -2728,8 +2728,24 @@ namespace L3DPP
         // get filename
         std::string filename = output_folder+"/"+createOutputFilename()+".bin";
 
-        std::ofstream file;
-        file.open(filename.c_str(), std::ios::binary);
+        std::ofstream f;
+        f.open(filename.c_str(), std::ios::binary);
+
+        uint32_t numViews = static_cast<uint32_t>(views_.size());
+        f.write(reinterpret_cast<char *>(&numViews), sizeof(uint32_t));
+        
+        // Views
+        struct ViewRecord{
+            uint32_t id;
+            uint32_t fnameLen;
+        } vr;
+
+        for (auto v = views_.begin(); v != views_.end(); v++){
+            vr.id = v->second->id();
+            vr.fnameLen = v->second->fname().length();
+            f.write(reinterpret_cast<char *>(&vr), sizeof(ViewRecord));
+            f.write(v->second->fname().c_str(), sizeof(char) * vr.fnameLen);
+        }
 
         const double PI = std::atan(1) * 4; 
         std::random_device rd; // obtain a random number from hardware
@@ -2739,8 +2755,13 @@ namespace L3DPP
         Eigen::Vector3d up(0.0, 0.0, 1.0);
         Eigen::Vector3d right(1.0, 0.0, 0.0);
 
-        SampleRecord sr;
-        size_t srSize = sizeof(float) * 3 + sizeof(uint32_t);
+        struct PointRecord{
+            PointRecord(){}
+            PointRecord(float x, float y, float z) : x(x), y(y), z(z) {}
+            float x;
+            float y;
+            float z;
+        };
         
         for(size_t i=0; i<lines3D_.size(); ++i)
         {
@@ -2748,14 +2769,15 @@ namespace L3DPP
             L3DPP::LineCluster3D &cluster = current.underlyingCluster_;
             uint32_t viewRef = cluster.reference_view();
 
-            if (matched_.find(viewRef) != matched_.end()){
-                std::cout << "Ref:" << viewRef << " (" << views_[viewRef]->fname() << ")" << std::endl;
-
-                for (auto v : matched_[viewRef]){
-                    std::cout << v << " " << "(" << views_[v]->fname() << "), ";
-                }
-                exit(1);
+            uint32_t matchedViews = matched_[viewRef].size() + 1;
+            f.write(reinterpret_cast<char *>(&matchedViews), sizeof(uint32_t));
+            f.write(reinterpret_cast<char *>(&viewRef), sizeof(uint32_t));
+            for (auto &v : matched_[viewRef]){
+                uint32_t vID = static_cast<uint32_t>(v);
+                f.write(reinterpret_cast<char *>(&vID), sizeof(uint32_t));
             }
+
+            std::vector<PointRecord> points;
 
             std::list<L3DPP::Segment3D>::const_iterator it2 = current.collinear3Dsegments_.begin();
             for(; it2!=current.collinear3Dsegments_.end(); ++it2)
@@ -2799,18 +2821,28 @@ namespace L3DPP
                             Eigen::Vector3d p = c + (radius * std::cos(angle) * a) + (radius * std::sin(angle) * b); 
                             // file << "v " << p.x() << " " << p.y() << " " << p.z() << std::endl;
                             
-                            sr.viewRef = viewRef;
-                            sr.x = static_cast<float>(p.x());
-                            sr.y = static_cast<float>(p.y());
-                            sr.z = static_cast<float>(p.z());
-                            file.write(reinterpret_cast<char *>(&sr), srSize);
+                            points.push_back(PointRecord(static_cast<float>(p.x()),
+                                                    static_cast<float>(p.y()),
+                                                    static_cast<float>(p.z())));
                         }
                     }
                 }
             }
+
+            const size_t maxPoints = 30e6;
+            if (points.size() > maxPoints){
+                points.resize(maxPoints);
+                std::cout << "Warning: number of sample points exceeds 30 millions!" << std::endl;
+            }
+
+            uint32_t numPoints = points.size();
+            f.write(reinterpret_cast<char *>(&numPoints), sizeof(uint32_t));
+            for (auto &p : points){
+                f.write(reinterpret_cast<char *>(&p), sizeof(PointRecord));
+            }
         }
 
-        file.close();
+        f.close();
 
         view_reserve_mutex_.unlock();
         view_mutex_.unlock();
