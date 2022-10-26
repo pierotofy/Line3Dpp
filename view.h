@@ -54,7 +54,8 @@ namespace L3DPP
              const Eigen::Vector3d& t,
              const unsigned int width, const unsigned int height,
              const float median_depth,
-             L3DPP::DataArray<float>* superpixels=NULL);
+             L3DPP::DataArray<float>* superpixels=NULL,
+             const std::string &fname = "");
         ~View();
 
         // compute spatial regularizer (from pixel value)
@@ -150,6 +151,7 @@ namespace L3DPP
         float diagonal() const {return diagonal_;}
         L3DPP::DataArray<float4>* lines(){return lines_;}
         L3DPP::DataArray<float>* superpixels(){return superpixels_;}
+        std::string fname(){ return fname_; }
         size_t num_lines() const {return lines_->width();}
         float k() const {return k_;}
         float median_depth() const {return median_depth_;}
@@ -186,6 +188,8 @@ namespace L3DPP
 
         // superpixels (Plane3D)
         L3DPP::DataArray<float>* superpixels_;
+
+        std::string fname_;
 
         // camera
         unsigned int id_;

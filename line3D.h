@@ -105,7 +105,8 @@ namespace L3DPP
                       const Eigen::Matrix3d& K, const Eigen::Matrix3d& R,
                       const Eigen::Vector3d& t, const float median_depth,
                       const std::list<unsigned int>& wps_or_neighbors,
-                      const std::vector<cv::Vec4f>& line_segments=std::vector<cv::Vec4f>());
+                      const std::vector<cv::Vec4f>& line_segments=std::vector<cv::Vec4f>(),
+                      const std::string &fname = "");
 
         // void undistortImage(...): undistorts an image based on given distortion coefficients
         // -------------------------------------

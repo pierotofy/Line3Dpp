@@ -8,10 +8,11 @@ namespace L3DPP
                const Eigen::Vector3d& t,
                const unsigned int width, const unsigned int height,
                const float median_depth,
-               L3DPP::DataArray<float>* superpixels) :
+               L3DPP::DataArray<float>* superpixels,
+               const std::string &fname) :
         id_(id), lines_(lines), K_(K), R_(R), t_(t),
         width_(width), height_(height), initial_median_depth_(fmax(fabs(median_depth),L3D_EPS)),
-        superpixels_(superpixels)
+        superpixels_(superpixels), fname_(fname)
     {
         // init
         diagonal_ = sqrtf(float(width_*width_+height_*height_));

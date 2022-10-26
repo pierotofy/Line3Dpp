@@ -239,6 +239,7 @@ int main(int argc, char *argv[])
     }
     nvm_file.close();
 
+
     // load images (parallel)
 #ifdef L3DPP_OPENMP
     #pragma omp parallel for
@@ -295,7 +296,7 @@ int main(int argc, char *argv[])
             // add to system
             Line3D->addImage(i,img_undist,K,cams_rotation[i],
                              cams_translation[i],
-                             med_depth,cams_worldpointIDs[i]);
+                             med_depth,cams_worldpointIDs[i], std::vector<cv::Vec4f>(), fname);
         }
     }
 

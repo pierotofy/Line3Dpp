@@ -104,12 +104,19 @@ endif(Boost_FOUND)
 ##-----------------------------------------------------------------------------
 ## CERES
 find_package(Ceres)
-if(Ceres_FOUND)
-  include_directories(${CERES_INCLUDES})
-  set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} optimized ceres)
-endif(Ceres_FOUND)
+find_package(SuiteSparse)
+if(CERES_FOUND AND SuiteSparse_FOUND)
+  message("Found Ceres: ${CERES_LIBRARIES}")
+  message("Found SuiteSparse: ${SUITESPARSE_LIBRARIES}")
+  
+  include_directories(${CERES_INCLUDE_DIRS})
+  include_directories(${SUITESPARSE_INCLUDE_DIRS})
+  set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} optimized ${CERES_LIBRARIES} ${SUITESPARSE_LIBRARIES})
+else()
+  message(WARNING "Ceres Found: ${CERES_FOUND} SuiteSparse Found: ${SuiteSparse_FOUND}")
+endif()
 
-if(NOT Ceres_FOUND AND WIN32)
+if(NOT CERES_FOUND AND WIN32)
 
   message("ceres not found, try to define it manually...")
 
@@ -167,13 +174,13 @@ if(NOT Ceres_FOUND AND WIN32)
       set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} optimized ceres)
       include_directories(${CERES_INCLUDE_DIR})
       link_directories(${CERES_LIBDIR})
-      set(Ceres_FOUND 1)
+      set(CERES_FOUND 1)
     endif(CERES_LIBDIR AND CERES_INCLUDE_DIR)
   elseif( "${CERES_LIBRARY}" STREQUAL "" AND CMAKE_SIZEOF_VOID_P EQUAL 8 )
     message("Sorry... precompiled ceres only functioning with 64 bit!")  
   endif( "${CERES_LIBRARY}" STREQUAL "" AND CMAKE_SIZEOF_VOID_P EQUAL 8 )
 		   
-endif(NOT Ceres_FOUND AND WIN32)
+endif(NOT CERES_FOUND AND WIN32)
 
 ##-----------------------------------------------------------------------------
 ## OpenMP
@@ -218,11 +225,11 @@ ELSE(OPENMP_FOUND)
     option(APP_LINE_3D++_USE_OPENMP "Line3D++: use OpenMP" OFF)
 ENDIF(OPENMP_FOUND)
 
-IF(Ceres_FOUND)
+IF(CERES_FOUND)
     option(APP_LINE_3D++_USE_CERES "Line3D++: use Ceres" ON)
-ELSE(Ceres_FOUND)
+ELSE(CERES_FOUND)
     option(APP_LINE_3D++_USE_CERES "Line3D++: use Ceres" OFF)
-ENDIF(Ceres_FOUND)
+ENDIF(CERES_FOUND)
 
 if(CUDA_FOUND AND APP_LINE_3D++_USE_CUDA)
     SET(L3DPP_CUDA 1)
@@ -232,9 +239,9 @@ if(OPENMP_FOUND AND APP_LINE_3D++_USE_OPENMP)
     SET(L3DPP_OPENMP 1)
 endif(OPENMP_FOUND AND APP_LINE_3D++_USE_OPENMP)
 
-if(Ceres_FOUND AND APP_LINE_3D++_USE_CERES)
+if(CERES_FOUND)
     SET(L3DPP_CERES 1)
-endif(Ceres_FOUND AND APP_LINE_3D++_USE_CERES)
+endif(CERES_FOUND AND APP_LINE_3D++_USE_CERES)
 
 ## create header with defines
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/configLIBS.h.in ${CMAKE_CURRENT_BINARY_DIR}/configLIBS.h)

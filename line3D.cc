@@ -115,7 +115,8 @@ namespace L3DPP
                           const Eigen::Matrix3d& K, const Eigen::Matrix3d& R,
                           const Eigen::Vector3d& t, const float median_depth,
                           const std::list<unsigned int>& wps_or_neighbors,
-                          const std::vector<cv::Vec4f>& line_segments)
+                          const std::vector<cv::Vec4f>& line_segments,
+                          const std::string &fname)
     {
         // check size
         if(std::max(image.cols,image.rows) < L3D_DEF_MIN_IMG_WIDTH)
@@ -197,7 +198,7 @@ namespace L3DPP
         }
 
         // create view
-        L3DPP::View* v = new L3DPP::View(camID,lines,K,R,t,image.cols,image.rows,median_depth);
+        L3DPP::View* v = new L3DPP::View(camID,lines,K,R,t,image.cols,image.rows,median_depth, NULL, fname);
         view_mutex_.lock();
 
         display_text_mutex_.lock();
@@ -2746,6 +2747,15 @@ namespace L3DPP
             L3DPP::FinalLine3D current = lines3D_[i];
             L3DPP::LineCluster3D &cluster = current.underlyingCluster_;
             uint32_t viewRef = cluster.reference_view();
+
+            if (matched_.find(viewRef) != matched_.end()){
+                std::cout << "Ref:" << viewRef << " (" << views_[viewRef]->fname() << ")" << std::endl;
+
+                for (auto v : matched_[viewRef]){
+                    std::cout << v << " " << "(" << views_[v]->fname() << "), ";
+                }
+                exit(1);
+            }
 
             std::list<L3DPP::Segment3D>::const_iterator it2 = current.collinear3Dsegments_.begin();
             for(; it2!=current.collinear3Dsegments_.end(); ++it2)
