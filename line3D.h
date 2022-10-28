@@ -423,6 +423,7 @@ namespace L3DPP
         std::vector<L3DPP::LineCluster3D> clusters3D_;
         std::vector<L3DPP::FinalLine3D> lines3D_;
         std::map<L3DPP::Segment2D,std::set<L3DPP::Segment2D> > used_;
+        std::map<int,std::map<unsigned int,bool> > cluster2cameras;
     };
 }
 

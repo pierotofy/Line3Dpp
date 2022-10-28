@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 
     std::string outputFolder = outputArg.getValue().c_str();
     if(outputFolder.length() == 0)
-        outputFolder = inputFolder+"/Line3D++/";
+        outputFolder = inputFolder+"/Line3D++";
 
     int maxWidth = scaleArg.getValue();
     unsigned int neighbors = std::max(neighborArg.getValue(),2);

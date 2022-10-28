@@ -2096,7 +2096,7 @@ namespace L3DPP
 
         //process clusters
         std::map<int,std::list<L3DPP::Segment2D> > cluster2segments;
-        std::map<int,std::map<unsigned int,bool> > cluster2cameras;
+        cluster2cameras.clear();
         std::vector<int> unique_clusters;
 
         std::map<int,L3DPP::Segment2D>::const_iterator it = local2global_.begin();
@@ -2136,6 +2136,7 @@ namespace L3DPP
             {
                 // create 3D line cluster
                 L3DPP::LineCluster3D LC = get3DlineFromCluster(cluster2segments[clID]);
+                LC.clusterId_ = clID;
 
                 if(LC.size() > 0)
                 {
@@ -2731,6 +2732,9 @@ namespace L3DPP
         std::ofstream f;
         f.open(filename.c_str(), std::ios::binary);
 
+        std::ofstream fobj;
+        fobj.open((filename + ".obj").c_str());
+
         uint32_t numViews = static_cast<uint32_t>(views_.size());
         f.write(reinterpret_cast<char *>(&numViews), sizeof(uint32_t));
         
@@ -2747,14 +2751,6 @@ namespace L3DPP
             f.write(v->second->fname().c_str(), sizeof(char) * vr.fnameLen);
         }
 
-        const double PI = std::atan(1) * 4; 
-        std::random_device rd; // obtain a random number from hardware
-        std::mt19937 gen(rd()); // seed the generator
-        std::uniform_real_distribution<> ad(-PI, PI);
-        
-        Eigen::Vector3d up(0.0, 0.0, 1.0);
-        Eigen::Vector3d right(1.0, 0.0, 0.0);
-
         struct PointRecord{
             PointRecord(){}
             PointRecord(float x, float y, float z) : x(x), y(y), z(z) {}
@@ -2762,70 +2758,47 @@ namespace L3DPP
             float y;
             float z;
         };
-        
+
+        size_t totalPoints = 0;
+
         for(size_t i=0; i<lines3D_.size(); ++i)
         {
             L3DPP::FinalLine3D current = lines3D_[i];
             L3DPP::LineCluster3D &cluster = current.underlyingCluster_;
-            uint32_t viewRef = cluster.reference_view();
 
-            uint32_t matchedViews = matched_[viewRef].size() + 1;
-            f.write(reinterpret_cast<char *>(&matchedViews), sizeof(uint32_t));
-            f.write(reinterpret_cast<char *>(&viewRef), sizeof(uint32_t));
-            for (auto &v : matched_[viewRef]){
-                uint32_t vID = static_cast<uint32_t>(v);
+            uint32_t clusterViews = cluster2cameras[cluster.clusterId_].size();
+            f.write(reinterpret_cast<char *>(&clusterViews), sizeof(uint32_t));
+            for (auto it : cluster2cameras[cluster.clusterId_]){
+                uint32_t vID = static_cast<uint32_t>(it.first);
                 f.write(reinterpret_cast<char *>(&vID), sizeof(uint32_t));
             }
 
             std::vector<PointRecord> points;
 
             std::list<L3DPP::Segment3D>::const_iterator it2 = current.collinear3Dsegments_.begin();
+            
             for(; it2!=current.collinear3Dsegments_.end(); ++it2)
             {
+                const double L = it2->length();
+
                 if (it2->valid()){
-
-                    // Sample points on the cylinder defined
-                    // by the line P2-P1
-                    // This is done by using the parametrized line+circle equations
-                    // https://www.nagwa.com/en/explainers/296105290721/
-                    // https://math.stackexchange.com/questions/73237/parametric-equation-of-a-circle-in-3d-space
-
+                    for (auto it : cluster2cameras[cluster.clusterId_]){
+                        uint32_t vID = static_cast<uint32_t>(it.first);
+                        std::cout << vID << " " << views_[vID]->fname() << std::endl;
+                    }
+                    
                     Eigen::Vector3d P1 = it2->P1();
                     Eigen::Vector3d P2 = it2->P2();
-                    Eigen::Vector3d d = (P2 - P1).normalized();
 
-                    Eigen::Vector3d a = d.cross(up);
-                    if (a.isZero(1e-4)){
-                        a = d.cross(right);
-                    }
-                    Eigen::Vector3d b = a.cross(d);
+                    fobj << "v " << P1.x() << " " << P1.y() << " " << P1.z() << std::endl;
+                    fobj << "v " << P2.x() << " " << P2.y() << " " << P2.z() << std::endl;
 
-                    // file << "v " << P1.x() << " " << P1.y() << " " << P1.z() << std::endl;
-                    // file << "v " << P2.x() << " " << P2.y() << " " << P2.z() << std::endl;
-
-                    const double scale = 20;
-                    const double radius = 0.01;
-
-                    const double L = it2->length();
-                    unsigned int numSamples = static_cast<unsigned int>(std::round(scale * L));
-                    std::uniform_real_distribution<> td(0, L); // t
-
-                    if (numSamples > 0){
-                        // Sample angles and lengths
-                        for (unsigned int sa = 0; sa < numSamples; sa++){
-                            double angle = ad(gen);
-                            double t = td(gen);
-
-                            Eigen::Vector3d c = P1 + d * t;
-                            
-                            Eigen::Vector3d p = c + (radius * std::cos(angle) * a) + (radius * std::sin(angle) * b); 
-                            // file << "v " << p.x() << " " << p.y() << " " << p.z() << std::endl;
-                            
-                            points.push_back(PointRecord(static_cast<float>(p.x()),
-                                                    static_cast<float>(p.y()),
-                                                    static_cast<float>(p.z())));
-                        }
-                    }
+                    points.push_back(PointRecord(static_cast<float>(P1.x()),
+                                            static_cast<float>(P1.y()),
+                                            static_cast<float>(P1.z())));
+                    points.push_back(PointRecord(static_cast<float>(P2.x()),
+                                            static_cast<float>(P2.y()),
+                                            static_cast<float>(P2.z())));
                 }
             }
 
@@ -2840,9 +2813,14 @@ namespace L3DPP
             for (auto &p : points){
                 f.write(reinterpret_cast<char *>(&p), sizeof(PointRecord));
             }
+
+            totalPoints += numPoints;
         }
 
         f.close();
+        fobj.close();
+
+        std::cout << "Saved " << totalPoints << " points to " << filename << std::endl;
 
         view_reserve_mutex_.unlock();
         view_mutex_.unlock();

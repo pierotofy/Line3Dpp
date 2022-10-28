@@ -144,6 +144,7 @@ namespace L3DPP
             seg3D_.translate(t);
         }
 
+        unsigned int clusterId_ = 0;
     private:
         L3DPP::Segment3D seg3D_;
         std::list<L3DPP::Segment2D> residuals_;
