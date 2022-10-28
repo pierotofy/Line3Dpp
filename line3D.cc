@@ -2735,22 +2735,6 @@ namespace L3DPP
         std::ofstream fobj;
         fobj.open((filename + ".obj").c_str());
 
-        uint32_t numViews = static_cast<uint32_t>(views_.size());
-        f.write(reinterpret_cast<char *>(&numViews), sizeof(uint32_t));
-        
-        // Views
-        struct ViewRecord{
-            uint32_t id;
-            uint32_t fnameLen;
-        } vr;
-
-        for (auto v = views_.begin(); v != views_.end(); v++){
-            vr.id = v->second->id();
-            vr.fnameLen = v->second->fname().length();
-            f.write(reinterpret_cast<char *>(&vr), sizeof(ViewRecord));
-            f.write(v->second->fname().c_str(), sizeof(char) * vr.fnameLen);
-        }
-
         struct PointRecord{
             PointRecord(){}
             PointRecord(float x, float y, float z) : x(x), y(y), z(z) {}
@@ -2805,7 +2789,7 @@ namespace L3DPP
             const size_t maxPoints = 30e6;
             if (points.size() > maxPoints){
                 points.resize(maxPoints);
-                std::cout << "Warning: number of sample points exceeds 30 millions!" << std::endl;
+                std::cout << "Warning: number of points exceeds 30 millions!" << std::endl;
             }
 
             uint32_t numPoints = points.size();
@@ -2820,7 +2804,7 @@ namespace L3DPP
         f.close();
         fobj.close();
 
-        std::cout << "Saved " << totalPoints << " points to " << filename << std::endl;
+        std::cout << "Saved " << (totalPoints / 2) << " lines to " << filename << std::endl;
 
         view_reserve_mutex_.unlock();
         view_mutex_.unlock();
